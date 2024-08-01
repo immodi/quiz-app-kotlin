@@ -1,9 +1,9 @@
 package com.example.quizapp
 
 object Constants {
-    val USER_NAME: String = "user_name"
-    val TOTAL_QUESTIONS: String = "total_questions"
-    val SCORE: String = "score"
+    const val USER_NAME: String = "user_name"
+    const val TOTAL_QUESTIONS: String = "total_questions"
+    const val SCORE: String = "score"
 
     fun getQuestions(): ArrayList<Question> {
         val questionsList = ArrayList<Question>()
@@ -68,7 +68,7 @@ object Constants {
             "What country does this flag belong to?",
             R.drawable.ic_flag_of_germany,
             arrayListOf("Germany", "Georgia",
-            "Greece", "none of these"),
+            "Greece", "None Of These"),
             0
         )
 

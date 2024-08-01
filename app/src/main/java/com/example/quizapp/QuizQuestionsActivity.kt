@@ -15,19 +15,18 @@ import kotlin.reflect.typeOf
 class QuizQuestionsActivity : AppCompatActivity() {
     private var userName: String? = null
 
-    private val questionsList: ArrayList<Question> = Constants.getQuestions()
+    private val questionsList: ArrayList<Question> = ArrayList(Constants.getQuestions().shuffled())
     private var currentQuestionIndex = 0;
-    private var selectedAlternativeIndex = -1;
+    private var selectedOptionsIndex = -1;
     private var isAnswerChecked = false;
     private var totalScore = 0;
-    private val alternativesIds = arrayOf(R.id.optionOne, R.id.optionTwo, R.id.optionThree, R.id.optionFour)
 
     private var tvQuestion: TextView? = null
     private var ivImage: ImageView? = null
     private var progressBar: ProgressBar? = null
     private var tvProgress: TextView? = null
     private var btnSubmit: Button? = null
-    private var tvAlternatives: ArrayList<TextView>? = null
+    private var tvOptions: ArrayList<TextView>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,35 +39,42 @@ class QuizQuestionsActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         tvProgress = findViewById(R.id.tvProgress)
         btnSubmit = findViewById(R.id.btnSubmit)
-        tvAlternatives = arrayListOf(
+        tvOptions = ArrayList(arrayListOf<TextView>(
             findViewById(R.id.optionOne),
             findViewById(R.id.optionTwo),
             findViewById(R.id.optionThree),
             findViewById(R.id.optionFour),
-        )
+        ).shuffled())
 
         updateQuestion()
 
         btnSubmit?.setOnClickListener {
             if (!isAnswerChecked) {
-                val anyAnswerIsChecked = selectedAlternativeIndex != -1
+                val anyAnswerIsChecked = selectedOptionsIndex != -1
                 if (!anyAnswerIsChecked) {
-                    Toast.makeText(this, "Please, select an alternative", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Please, select an answer", Toast.LENGTH_SHORT).show()
                 } else {
                     val currentQuestion = questionsList[currentQuestionIndex]
                     if (
-                        selectedAlternativeIndex == currentQuestion.correctAnswerIndex
+                        selectedOptionsIndex == currentQuestion.correctAnswerIndex
                     ) {
-                        answerView(tvAlternatives!![selectedAlternativeIndex], R.drawable.correct_option_border_bg)
+                        // choose the correct answer
+
+                        // color option green
+                        answerView(tvOptions!![selectedOptionsIndex], R.drawable.correct_option_border_bg)
                         totalScore++
                     } else {
-                        answerView(tvAlternatives!![selectedAlternativeIndex], R.drawable.wrong_option_border_bg)
-                        answerView(tvAlternatives!![currentQuestion.correctAnswerIndex], R.drawable.correct_option_border_bg)
+                        // choose the wrong answer
+
+                        // color option red
+                        answerView(tvOptions!![selectedOptionsIndex], R.drawable.wrong_option_border_bg)
+                        // color CORRECT option green
+                        answerView(tvOptions!![currentQuestion.correctAnswerIndex], R.drawable.correct_option_border_bg)
                     }
 
                     isAnswerChecked = true
                     btnSubmit?.text = if (currentQuestionIndex == questionsList.size - 1) "FINISH" else "GO TO NEXT QUESTION"
-                    selectedAlternativeIndex = -1
+                    selectedOptionsIndex = -1
                 }
             } else {
                 if (currentQuestionIndex < questionsList.size - 1) {
@@ -87,12 +93,13 @@ class QuizQuestionsActivity : AppCompatActivity() {
             }
         }
 
-        tvAlternatives?.let {
+        // adds event listener to highlight current selected option before submitting
+        tvOptions?.let {
             for (optionIndex in it.indices) {
-                it[optionIndex].let {
-                    it.setOnClickListener{
+                it[optionIndex].let { itB ->
+                    itB.setOnClickListener{
                         if (!isAnswerChecked) {
-                            selectedAlternativeView(it as TextView, optionIndex)
+                            selectedAlternativeView(itB, optionIndex)
                         }
                     }
                 }
@@ -101,7 +108,7 @@ class QuizQuestionsActivity : AppCompatActivity() {
     }
 
     private fun updateQuestion() {
-        defaultAlternativesView()
+        defaultOptionsView()
 
         // Render Question Text
         tvQuestion?.text = questionsList[currentQuestionIndex].questionText
@@ -110,17 +117,18 @@ class QuizQuestionsActivity : AppCompatActivity() {
         // progressBar
         progressBar?.progress = currentQuestionIndex + 1
         // Text of progress bar
-        tvProgress?.text = "${currentQuestionIndex + 1}/${questionsList.size}"
+        "${currentQuestionIndex + 1}/${questionsList.size}".also { tvProgress?.text = it }
 
         for (alternativeIndex in questionsList[currentQuestionIndex].alternatives.indices) {
-            tvAlternatives!![alternativeIndex].text = questionsList[currentQuestionIndex].alternatives[alternativeIndex]
+            tvOptions!![alternativeIndex].text = questionsList[currentQuestionIndex].alternatives[alternativeIndex]
         }
 
         btnSubmit?.text = if (currentQuestionIndex == questionsList.size - 1) "FINISH" else "SUBMIT"
     }
-
-    private fun defaultAlternativesView() {
-        for (alternativeTv in tvAlternatives!!) {
+    
+    // redraws all options with the new question options in default state
+    private fun defaultOptionsView() {
+        for (alternativeTv in tvOptions!!) {
             alternativeTv.typeface = Typeface.DEFAULT
             alternativeTv.setTextColor(Color.parseColor("#7A8089"))
             alternativeTv.background = ContextCompat.getDrawable(
@@ -130,9 +138,10 @@ class QuizQuestionsActivity : AppCompatActivity() {
         }
     }
 
+    // colors selected option based with a default border [BEFORE SUBMITTING]
     private fun selectedAlternativeView(option: TextView, index: Int) {
-        defaultAlternativesView()
-        selectedAlternativeIndex = index
+        defaultOptionsView()
+        selectedOptionsIndex = index
 
         option.setTextColor(
             Color.parseColor("#363A43")
@@ -144,12 +153,13 @@ class QuizQuestionsActivity : AppCompatActivity() {
         )
     }
 
+    // colors selected option based on parameters [AFTER SUBMITTING]
     private fun answerView(view: TextView, drawableId: Int) {
         view.background = ContextCompat.getDrawable(
             this@QuizQuestionsActivity,
             drawableId
         )
-        tvAlternatives!![selectedAlternativeIndex].setTextColor(
+        tvOptions!![selectedOptionsIndex].setTextColor(
             Color.parseColor("#FFFFFF")
         )
     }

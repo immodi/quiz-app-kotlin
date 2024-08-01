@@ -20,10 +20,12 @@ class ResultActivity : AppCompatActivity() {
         val scoreTv: TextView = findViewById(R.id.scoreTv)
         val btnRestart: Button = findViewById(R.id.btnRestart)
 
-        congratulationsTv.text = "Congratulations, $userName!"
-        scoreTv.text = "Your score is $score of $totalQuestions"
+        "Congratulations, $userName!".also { congratulationsTv.text = it }
+        "Your score is $score of $totalQuestions".also { scoreTv.text = it }
         btnRestart.setOnClickListener{
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, QuizQuestionsActivity::class.java)
+            intent.putExtra(Constants.USER_NAME, userName)
+            finishAffinity()
             startActivity(intent)
             finish()
         }
